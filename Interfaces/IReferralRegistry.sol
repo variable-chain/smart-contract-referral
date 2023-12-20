@@ -2,11 +2,15 @@
 pragma solidity =0.8.20;
 
 interface ReferralRegistry {
-    function createReferralCode(bytes32 _code, bool isBroker) external;
+    function createReferralCode(bytes32 code, bool isBroker) external;
 
-    function setTraderCode(bytes32 _code) external;
+    function setTraderCode(bytes32 code) external;
 
-    function addWhiteListedBroker(address _broker) external;
+    function manageBroker(address broker, bool isWhiteListed) external;
 
-    function registerExchange(string memory _name, bytes32 _code) external;
+    function manageExchange(
+        address exchange,
+        bytes32 code,
+        bool isWhiteListed
+    ) external;
 }
