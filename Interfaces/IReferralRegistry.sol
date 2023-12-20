@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.20;
 
-interface ReferralRegistry {
-    function createReferralCode(bytes32 code, bool isBroker) external;
+interface IReferralRegistry {
+    function createAffiliateCode(bytes32 code) external;
+
+    function createBrokerCode(address exchange, bytes32 code) external;
 
     function setTraderCode(bytes32 code) external;
 
