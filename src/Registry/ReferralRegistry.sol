@@ -6,7 +6,6 @@ pragma solidity =0.8.20;
  * @dev A Solidity smart contract for managing a referral registry system with affiliates, brokers, traders, and exchanges.
  */
 contract ReferralRegistry {
-
     address public owner;
 
     /**
@@ -69,10 +68,7 @@ contract ReferralRegistry {
     /**
      * @dev Event emitted when a unique affiliate code is created.
      */
-    event AffiliateCodeCreated(
-        address indexed creator,
-        bytes32 code
-    );
+    event AffiliateCodeCreated(address indexed creator, bytes32 code);
 
     /**
      * @dev Event emitted when a broker code is created for a specific exchange.
@@ -86,10 +82,7 @@ contract ReferralRegistry {
     /**
      * @dev Event emitted when a trader code is registered.
      */
-    event TraderCodeRegistered(
-        address indexed trader,
-        bytes32 code
-    );
+    event TraderCodeRegistered(address indexed trader, bytes32 code);
 
     /**
      * @dev Constructor initializing the contract and setting the owner.
@@ -100,6 +93,7 @@ contract ReferralRegistry {
 
     function updateOwner(address newOwner) external {
         require(msg.sender == owner, "ReferralRegistry: Unauthorized");
+        require(newOwner != address(0), "ReferralRegistry: Can't be zero");
         owner = newOwner;
     }
 
@@ -112,11 +106,11 @@ contract ReferralRegistry {
             !registeredReferralCode[code],
             "ReferralRegistry: Code already registered"
         );
-        registeredReferralCode[code] = true;
         require(
             !affiliateRegister[msg.sender].isRegistered,
             "ReferralRegistry: Affiliate already registered"
         );
+        registeredReferralCode[code] = true;
         affiliateRegister[msg.sender].isRegistered = true;
         affiliateRegister[msg.sender].affiliateCode = code;
         emit AffiliateCodeCreated(msg.sender, code);
@@ -128,7 +122,8 @@ contract ReferralRegistry {
      * @param code The unique code to be associated with the broker and exchange.
      */
     function createBrokerCode(address exchange, bytes32 code) external {
-        require(brokerRegister[msg.sender].isWhiteListed,
+        require(
+            brokerRegister[msg.sender].isWhiteListed,
             "ReferralRegistry: Broker is not whitelisted"
         );
         require(
@@ -161,10 +156,7 @@ contract ReferralRegistry {
      * @param broker The address of the broker.
      * @param isWhiteListed A flag indicating whether the broker should be whitelisted or not.
      */
-    function manageBroker(
-        address broker,
-        bool isWhiteListed
-    ) external {
+    function manageBroker(address broker, bool isWhiteListed) external {
         require(msg.sender == owner, "ReferralRegistry: Unauthorized");
         require(broker != address(0), "ReferralRegistry: Can't be zero Add");
         brokerRegister[broker].isWhiteListed = isWhiteListed;
