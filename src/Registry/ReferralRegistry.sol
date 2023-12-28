@@ -95,10 +95,10 @@ contract ReferralRegistry is Ownable {
      * @param code The unique code to be associated with the affiliate.
      */
     function createAffiliateCode(bytes32 code) external {
-        require(code != bytes32(0), "ReferralRegistry: invalid code");
+        require(code != bytes32(0), "RR: invalid code");
         require(
             !registeredReferralCode[code],
-            "ReferralRegistry: Code already registered"
+            "RR: Code already registered"
         );
         registeredReferralCode[code] = true;
         affiliateRegister[msg.sender].affiliateCode = code;
@@ -111,14 +111,14 @@ contract ReferralRegistry is Ownable {
      * @param code The unique code to be associated with the broker and exchange.
      */
     function createBrokerCode(address exchange, bytes32 code) external {
-        require(code != bytes32(0), "ReferralRegistry: invalid code");
+        require(code != bytes32(0), "RR: invalid code");
         require(
             brokerRegister[msg.sender].isWhiteListed,
-            "ReferralRegistry: Broker is not whitelisted"
+            "RR: Broker is not whitelisted"
         );
         require(
             !registeredReferralCode[code],
-            "ReferralRegistry: Code already registered"
+            "RR: Code already registered"
         );
         registeredReferralCode[code] = true;
         brokerRegister[msg.sender].isWhiteListed = true;
@@ -133,7 +133,7 @@ contract ReferralRegistry is Ownable {
     function setTraderCode(bytes32 code) external {
         require(
             traderRegister[msg.sender].affiliatedCode == bytes32(0),
-            "ReferralRegistry: Affiliate already registered"
+            "RR: Affiliate already registered"
         );
         traderRegister[msg.sender].affiliatedCode = code;
 
@@ -149,7 +149,7 @@ contract ReferralRegistry is Ownable {
         address broker,
         bool isWhiteListed
     ) external onlyOwner {
-        require(broker != address(0), "ReferralRegistry: Can't be zero Add");
+        require(broker != address(0), "RR: Can't be zero Add");
         brokerRegister[broker].isWhiteListed = isWhiteListed;
     }
 
@@ -165,7 +165,7 @@ contract ReferralRegistry is Ownable {
         bytes32 code,
         bool isWhiteList
     ) external onlyOwner {
-        require(exchange != address(0), "ReferralRegistry: Can't be zero Add");
+        require(exchange != address(0), "RR: Can't be zero Add");
         if (isWhiteList) {
             exchangeRegister[exchange].exchangeCode = code;
             // Mark the code as registered
@@ -176,7 +176,7 @@ contract ReferralRegistry is Ownable {
 
             require(
                 exchangeCodeToDelete != bytes32(0),
-                "ReferralRegistry: No code to delete"
+                "RR: No code to delete"
             );
 
             // Clear the exchange code
