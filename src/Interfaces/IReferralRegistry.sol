@@ -6,7 +6,6 @@ pragma solidity =0.8.20;
  * @dev A Solidity smart contract for managing a referral registry system with affiliates, brokers, traders, and exchanges.
  */
 interface IReferralRegistry {
-    function updateOwner(address newOwner) external;
 
     function createAffiliateCode(bytes32 code) external;
 

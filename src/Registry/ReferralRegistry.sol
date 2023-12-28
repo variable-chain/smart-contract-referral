@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.20;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 /**
  * @title ReferralRegistry
  * @dev A Solidity smart contract for managing a referral registry system with affiliates, brokers, traders, and exchanges.
  */
-contract ReferralRegistry {
-    address public owner;
-
+contract ReferralRegistry is Ownable {
     /**
      * @dev Struct representing a Trader with registration status and an affiliated code.
      */
     struct Trader {
-        bool isRegistered; // Flag indicating whether the trader is registered or not.
         bytes32 affiliatedCode; // Affiliated code associated with the trader.
     }
 
@@ -28,7 +27,6 @@ contract ReferralRegistry {
      * @dev Struct representing an Affiliate with registration status and a unique affiliate code.
      */
     struct Affiliate {
-        bool isRegistered; // Flag indicating whether the affiliate is registered or not.
         bytes32 affiliateCode; // Unique affiliated code associated with the affiliate.
     }
 
@@ -36,7 +34,6 @@ contract ReferralRegistry {
      * @dev Struct representing an Exchange with whitelist status and a unique exchange code.
      */
     struct Exchange {
-        bool isWhiteListed; // Flag indicating whether the exchange is whitelisted or not.
         bytes32 exchangeCode; // Unique exchange code associated with the exchange.
     }
 
@@ -85,33 +82,25 @@ contract ReferralRegistry {
     event TraderCodeRegistered(address indexed trader, bytes32 code);
 
     /**
-     * @dev Constructor initializing the contract and setting the owner.
+     * @dev Event emitted when a exchange is registered/deregistered.
      */
-    constructor() {
-        owner = msg.sender;
-    }
-
-    function updateOwner(address newOwner) external {
-        require(msg.sender == owner, "ReferralRegistry: Unauthorized");
-        require(newOwner != address(0), "ReferralRegistry: Can't be zero");
-        owner = newOwner;
-    }
+    event ExchangeInfoUpadted(
+        address indexed exchange,
+        bytes32 code,
+        bool isWhiteList
+    );
 
     /**
      * @dev Function for creating a unique affiliate code.
      * @param code The unique code to be associated with the affiliate.
      */
     function createAffiliateCode(bytes32 code) external {
+        require(code != bytes32(0), "ReferralRegistry: invalid code");
         require(
             !registeredReferralCode[code],
             "ReferralRegistry: Code already registered"
         );
-        require(
-            !affiliateRegister[msg.sender].isRegistered,
-            "ReferralRegistry: Affiliate already registered"
-        );
         registeredReferralCode[code] = true;
-        affiliateRegister[msg.sender].isRegistered = true;
         affiliateRegister[msg.sender].affiliateCode = code;
         emit AffiliateCodeCreated(msg.sender, code);
     }
@@ -122,6 +111,7 @@ contract ReferralRegistry {
      * @param code The unique code to be associated with the broker and exchange.
      */
     function createBrokerCode(address exchange, bytes32 code) external {
+        require(code != bytes32(0), "ReferralRegistry: invalid code");
         require(
             brokerRegister[msg.sender].isWhiteListed,
             "ReferralRegistry: Broker is not whitelisted"
@@ -142,10 +132,9 @@ contract ReferralRegistry {
      */
     function setTraderCode(bytes32 code) external {
         require(
-            !traderRegister[msg.sender].isRegistered,
+            traderRegister[msg.sender].affiliatedCode == bytes32(0),
             "ReferralRegistry: Affiliate already registered"
         );
-        traderRegister[msg.sender].isRegistered = true;
         traderRegister[msg.sender].affiliatedCode = code;
 
         emit TraderCodeRegistered(msg.sender, code);
@@ -156,8 +145,10 @@ contract ReferralRegistry {
      * @param broker The address of the broker.
      * @param isWhiteListed A flag indicating whether the broker should be whitelisted or not.
      */
-    function manageBroker(address broker, bool isWhiteListed) external {
-        require(msg.sender == owner, "ReferralRegistry: Unauthorized");
+    function manageBroker(
+        address broker,
+        bool isWhiteListed
+    ) external onlyOwner {
         require(broker != address(0), "ReferralRegistry: Can't be zero Add");
         brokerRegister[broker].isWhiteListed = isWhiteListed;
     }
@@ -167,20 +158,33 @@ contract ReferralRegistry {
      * @dev Function for managing exchanges not coming from brokers.
      * @param exchange The address of the exchange.
      * @param code The unique code to be associated with the exchange.
-     * @param isWhiteListed A flag indicating whether the exchange should be whitelisted or not.
+     * @param isWhiteList bool value to register/deregister exchange.
      */
     function manageExchange(
         address exchange,
         bytes32 code,
-        bool isWhiteListed
-    ) external {
-        require(msg.sender == owner, "ReferralRegistry: Unauthorized");
+        bool isWhiteList
+    ) external onlyOwner {
         require(exchange != address(0), "ReferralRegistry: Can't be zero Add");
-        require(
-            !exchangeRegister[exchange].isWhiteListed,
-            "ReferralRegistry: Exchange already registered"
-        );
-        exchangeRegister[exchange].isWhiteListed = isWhiteListed;
-        exchangeRegister[exchange].exchangeCode = code;
+        if (isWhiteList) {
+            exchangeRegister[exchange].exchangeCode = code;
+            // Mark the code as registered
+            registeredReferralCode[code] = true;
+        } else {
+            bytes32 exchangeCodeToDelete = exchangeRegister[exchange]
+                .exchangeCode;
+
+            require(
+                exchangeCodeToDelete != bytes32(0),
+                "ReferralRegistry: No code to delete"
+            );
+
+            // Clear the exchange code
+            exchangeRegister[exchange].exchangeCode = bytes32(0);
+
+            // Mark the code as unregistered
+            registeredReferralCode[exchangeCodeToDelete] = false;
+        }
+        emit ExchangeInfoUpadted(exchange, code, isWhiteList);
     }
 }
