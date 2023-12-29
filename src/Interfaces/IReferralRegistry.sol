@@ -6,7 +6,6 @@ pragma solidity =0.8.20;
  * @dev A Solidity smart contract for managing a referral registry system with affiliates, brokers, traders, and exchanges.
  */
 interface IReferralRegistry {
-
     function createAffiliateCode(bytes32 code) external;
 
     function createBrokerCode(address exchange, bytes32 code) external;
@@ -18,7 +17,7 @@ interface IReferralRegistry {
     function manageExchange(
         address exchange,
         bytes32 code,
-        bool isWhiteListed
+        bool isWhiteList
     ) external;
 
     // Events
@@ -35,7 +34,7 @@ interface IReferralRegistry {
 
     function traderRegister(
         address trader
-    ) external view returns (bool isRegistered, bytes32 affiliatedCode);
+    ) external view returns (bytes32 affiliatedCode);
 
     function brokerRegister(
         address broker
@@ -43,11 +42,11 @@ interface IReferralRegistry {
 
     function affiliateRegister(
         address affiliate
-    ) external view returns (bool isRegistered, bytes32 affiliateCode);
+    ) external view returns (bytes32 affiliateCode);
 
     function exchangeRegister(
         address exchange
-    ) external view returns (bool isWhiteListed, bytes32 exchangeCode);
+    ) external view returns (bytes32 exchangeCode);
 
     function registeredReferralCode(bytes32 code) external view returns (bool);
 }
